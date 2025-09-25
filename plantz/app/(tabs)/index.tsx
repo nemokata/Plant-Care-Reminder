@@ -1,98 +1,108 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
+import React, { useState } from 'react';
+import { FlatList, Pressable, RefreshControl, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { ThemedText } from '@/components/themed-text';
+import PlantCard from '@/components/plant-card';
+
+type MockPlant = {
+  id: string;
+  name: string;
+  species: string;
+  wateringIntervalDays: number;
+  lastWateredAt?: string;
+};
+
+const mockPlants: MockPlant[] = [
+  { id: '1', name: 'Sunny Fern', species: 'Fern', wateringIntervalDays: 3, lastWateredAt: new Date(Date.now() - 86400000).toISOString() },
+  { id: '2', name: 'Cactus Buddy', species: 'Cactus', wateringIntervalDays: 10, lastWateredAt: new Date(Date.now() - 5 * 86400000).toISOString() },
+  { id: '3', name: 'Mint Fresh', species: 'Mint', wateringIntervalDays: 2, lastWateredAt: new Date(Date.now() - 2 * 86400000).toISOString() },
+];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [plants, setPlants] = useState(mockPlants);
+  const [refreshing, setRefreshing] = useState(false);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 600);
+  };
+
+  const nextWaterText = (p: MockPlant) => {
+    if (!p.lastWateredAt) return 'Water today';
+    const last = new Date(p.lastWateredAt);
+    const next = new Date(last.getTime() + p.wateringIntervalDays * 86400000);
+    const diffDays = Math.ceil((next.getTime() - Date.now()) / 86400000);
+    if (diffDays <= 0) return 'Needs water now';
+    if (diffDays === 1) return 'Water tomorrow';
+    return `Water in ${diffDays} days`;
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <LinearGradient colors={['#9be7ff', '#d6f7d8']} style={styles.hero}>
+        <ThemedText type="title" style={styles.greeting}>🌿 Hey Plant Friend!</ThemedText>
+        <ThemedText type="default" style={styles.subtitle}>Let’s keep your green buddies happy today.</ThemedText>
+        <ThemedView style={styles.actionsRow}>
+          <QuickAction label="Add Plant" emoji="➕" onPress={() => { /* navigation later */ }} />
+          <QuickAction label="Watered" emoji="💧" onPress={() => { /* bulk mark later */ }} />
+          <QuickAction label="Reminders" emoji="⏰" onPress={() => { /* open reminders */ }} />
+        </ThemedView>
+      </LinearGradient>
+
+      <ThemedText type="subtitle" style={styles.sectionTitle}>Your Plants</ThemedText>
+
+      <FlatList
+        data={plants}
+        keyExtractor={(p) => p.id}
+        contentContainerStyle={plants.length === 0 && styles.emptyList}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={<ThemedText style={styles.emptyText}>No plants yet. Tap "Add Plant" to start 🌱</ThemedText>}
+        renderItem={({ item }) => (
+          <PlantCard
+            name={item.name}
+            species={item.species}
+            status={nextWaterText(item)}
+            onPress={() => {}}
+          />
+        )}
+      />
+    </ThemedView>
+  );
+}
+
+function QuickAction({ label, emoji, onPress }: { label: string; emoji: string; onPress: () => void }) {
+  return (
+    <Pressable style={({ pressed }) => [styles.quickAction, pressed && { opacity: 0.7 }]} onPress={onPress}>
+      <ThemedText style={styles.quickEmoji}>{emoji}</ThemedText>
+      <ThemedText style={styles.quickLabel}>{label}</ThemedText>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: { flex: 1 },
+  hero: {
+    paddingTop: 70,
+    paddingHorizontal: 22,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  greeting: { fontSize: 28, fontWeight: '700' },
+  subtitle: { marginTop: 6, opacity: 0.85 },
+  actionsRow: { flexDirection: 'row', gap: 12, marginTop: 22 },
+  quickAction: {
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     alignItems: 'center',
-    gap: 8,
+    minWidth: 84,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  quickEmoji: { fontSize: 22 },
+  quickLabel: { marginTop: 4, fontSize: 12, fontWeight: '600' },
+  sectionTitle: { marginTop: 18, marginHorizontal: 18, marginBottom: 8 },
+  emptyList: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
+  emptyText: { opacity: 0.6, textAlign: 'center' },
 });

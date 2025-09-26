@@ -16,7 +16,13 @@ export interface PlantSearchResult {
   toxicity?: string;
   growth_rate?: string;
   cycle?: string; // e.g., 'Perennial'
-  default_image?: { original_url?: string; small_url?: string };
+  humidity?: string; // often present for some entries
+  default_image?: {
+    original_url?: string;
+    small_url?: string;
+    medium_url?: string;
+    regular_url?: string;
+  };
   [key: string]: any; // allow extra fields
 }
 
@@ -57,4 +63,23 @@ export function inferWateringIntervalDays(watering?: string): number | undefined
   if (w.includes('minimal') || w.includes('low')) return 10;
   if (w.includes('weekly')) return 7;
   return undefined;
+}
+
+// Fallback image provider using Wikipedia page images (no key required)
+export async function fetchFallbackImageFromWikipedia(query: string): Promise<string | undefined> {
+  if (!query) return undefined;
+  const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=512&origin=*&titles=${encodeURIComponent(
+    query
+  )}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return undefined;
+    const data = await res.json();
+    const pages = data?.query?.pages;
+    if (!pages) return undefined;
+    const first = pages[Object.keys(pages)[0]];
+    return first?.thumbnail?.source as string | undefined;
+  } catch {
+    return undefined;
+  }
 }

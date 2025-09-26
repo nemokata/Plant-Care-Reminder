@@ -1,34 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import PlantCard from '@/components/plant-card';
-
-type MockPlant = {
-  id: string;
-  name: string;
-  species: string;
-  wateringIntervalDays: number;
-  lastWateredAt?: string;
-};
-
-const mockPlants: MockPlant[] = [
-  { id: '1', name: 'Sunny Fern', species: 'Fern', wateringIntervalDays: 3, lastWateredAt: new Date(Date.now() - 86400000).toISOString() },
-  { id: '2', name: 'Cactus Buddy', species: 'Cactus', wateringIntervalDays: 10, lastWateredAt: new Date(Date.now() - 5 * 86400000).toISOString() },
-  { id: '3', name: 'Mint Fresh', species: 'Mint', wateringIntervalDays: 2, lastWateredAt: new Date(Date.now() - 2 * 86400000).toISOString() },
-];
+import { usePlants, SavedPlant } from '@/state/plants-context';
 
 export default function HomeScreen() {
-  const [plants, setPlants] = useState(mockPlants);
-  const [refreshing, setRefreshing] = useState(false);
+  const { plants } = usePlants();
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 600);
   };
 
-  const nextWaterText = (p: MockPlant) => {
+  const nextWaterText = (p: SavedPlant) => {
+    if (!p.wateringIntervalDays) return 'Set watering interval';
     if (!p.lastWateredAt) return 'Water today';
     const last = new Date(p.lastWateredAt);
     const next = new Date(last.getTime() + p.wateringIntervalDays * 86400000);
@@ -57,13 +45,14 @@ export default function HomeScreen() {
         keyExtractor={(p) => p.id}
         contentContainerStyle={plants.length === 0 && styles.emptyList}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={<ThemedText style={styles.emptyText}>No plants yet. Tap "Add Plant" to start 🌱</ThemedText>}
+        ListEmptyComponent={<ThemedText style={styles.emptyText}>No plants yet. Find one in Explore or Common and tap Save 🌱</ThemedText>}
         renderItem={({ item }) => (
           <PlantCard
             name={item.name}
             species={item.species}
             status={nextWaterText(item)}
             onPress={() => {}}
+            imageUri={item.imageUri}
           />
         )}
       />

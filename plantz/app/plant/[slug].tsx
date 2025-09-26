@@ -53,7 +53,7 @@ export default function PlantDetailsScreen() {
         <InfoRow label="Scientific name" value={plant?.scientific_name} />
         <InfoRow label="Watering" value={plant?.watering} />
         <InfoRow label="Suggested interval" value={wateringInterval ? `~ every ${wateringInterval} days` : undefined} />
-        <InfoRow label="Sunlight" value={Array.isArray(plant?.sunlight) ? plant?.sunlight?.join(', ') : (plant?.sunlight as any)} />
+  <InfoRow label="Sunlight" value={Array.isArray(plant?.sunlight) ? plant?.sunlight?.join(', ') : (plant?.sunlight as any)} />
         <InfoRow label="Care level" value={plant?.care_level} />
         <InfoRow label="Toxicity" value={plant?.toxicity} />
         <InfoRow label="Growth rate" value={plant?.growth_rate} />
@@ -82,9 +82,9 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 60 },
   scroll: { paddingHorizontal: 18, paddingBottom: 40 },
-  title: { marginBottom: 12 },
-  image: { width: '100%', height: 220, borderRadius: 16, marginBottom: 14, backgroundColor: '#eee' },
-  row: { marginTop: 8 },
+  title: { marginBottom: 10 },
+  image: { width: '100%', height: 240, borderRadius: 16, marginBottom: 16, backgroundColor: '#eef2ef' },
+  row: { marginTop: 10 },
   rowLabel: { opacity: 0.7, fontSize: 12 },
   rowValue: { marginTop: 2 },
   error: { color: '#b00020', marginTop: 8 },

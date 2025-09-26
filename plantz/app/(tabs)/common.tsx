@@ -51,9 +51,14 @@ export default function CommonPlantsScreen() {
     const status = wateringInterval ? `~ every ${wateringInterval} days` : item.watering || '—';
     const name = item.common_name || item.scientific_name || 'Unknown';
     const slug = String(name).toLowerCase().replace(/\s+/g, '-');
+    const imageUri =
+      item.default_image?.small_url ||
+      item.default_image?.medium_url ||
+      item.default_image?.regular_url ||
+      item.default_image?.original_url;
     return (
-      <Link href={{ pathname: '/plant/[slug]', params: { slug, data: JSON.stringify(item) } }} asChild>
-        <PlantCard name={name} species={item.scientific_name} status={status} />
+      <Link href={{ pathname: '/plant-modal', params: { data: JSON.stringify(item) } }} asChild>
+        <PlantCard name={name} species={item.scientific_name} status={status} imageUri={imageUri} />
       </Link>
     );
   };
@@ -76,7 +81,7 @@ export default function CommonPlantsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 60 },
-  title: { marginHorizontal: 18, marginBottom: 8 },
+  title: { marginHorizontal: 18, marginBottom: 6 },
   error: { color: '#b00020', marginHorizontal: 18, marginTop: 8 },
   empty: { opacity: 0.6, marginHorizontal: 18, marginTop: 12 },
 });

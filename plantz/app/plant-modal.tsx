@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
@@ -6,7 +6,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { usePlants } from '@/state/plants-context';
 import { Pressable } from 'react-native';
-import { PlantSearchResult, fetchFallbackImageFromWikipedia, inferWateringIntervalDays } from '@/services/plant-api';
+import { fetchFallbackImageFromWikipedia, inferWateringIntervalDays } from '@/services/plant-api';
+import { useAuth } from '@/state/auth-context';
+import { Alert } from 'react-native';
+import { router } from 'expo-router';
 
 export default function PlantModal() {
   const { data } = useLocalSearchParams<{ data?: string }>();
@@ -41,17 +44,26 @@ export default function PlantModal() {
   const wateringText: string | undefined = core?.watering || core?.['Watering'];
   const wateringInterval = inferWateringIntervalDays(wateringText);
   const { addPlant } = usePlants();
+  const { user } = useAuth();
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!plant) return;
+    if (!user) {
+      Alert.alert('Sign in required', 'Please sign in to save plants to your account.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign in', onPress: () => router.push('/auth/sign-in') }
+      ]);
+      return;
+    }
     const name = title;
-    addPlant({
+    await addPlant({
       name,
       species: core.scientific_name || core['Latin name'],
       imageUri,
       wateringIntervalDays: wateringInterval,
       source: 'api',
     });
+    Alert.alert('Saved', `${name} added to your plants`);
   };
 
   return (

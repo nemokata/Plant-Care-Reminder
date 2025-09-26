@@ -5,6 +5,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PlantsProvider } from '@/state/plants-context';
+import { AuthProvider } from '@/state/auth-context';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -15,13 +16,15 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <PlantsProvider>
+      <AuthProvider>
+        <PlantsProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           <Stack.Screen name="plant-modal" options={{ presentation: 'modal', title: 'Plant' }} />
         </Stack>
-      </PlantsProvider>
+        </PlantsProvider>
+      </AuthProvider>
   <StatusBar style="dark" />
     </ThemeProvider>
   );

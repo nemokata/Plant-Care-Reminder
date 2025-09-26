@@ -5,9 +5,12 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import PlantCard from '@/components/plant-card';
 import { usePlants, SavedPlant } from '@/state/plants-context';
+import { useAuth } from '@/state/auth-context';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const { plants } = usePlants();
+  const { user, signOutUser } = useAuth();
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = () => {
@@ -34,7 +37,13 @@ export default function HomeScreen() {
         <ThemedView style={styles.actionsRow}>
           <QuickAction label="Add Plant" emoji="➕" onPress={() => { /* navigation later */ }} />
           <QuickAction label="Watered" emoji="💧" onPress={() => { /* bulk mark later */ }} />
-          <QuickAction label="Reminders" emoji="⏰" onPress={() => { /* open reminders */ }} />
+          <QuickAction label={user ? 'Sign out' : 'Sign in'} emoji={user ? '👋' : '🔐'} onPress={() => {
+            if (user) {
+              signOutUser();
+            } else {
+              router.push('/auth/sign-in');
+            }
+          }} />
         </ThemedView>
       </LinearGradient>
 

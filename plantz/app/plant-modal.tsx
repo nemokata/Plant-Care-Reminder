@@ -108,10 +108,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 50 },
   scroll: { paddingHorizontal: 18, paddingBottom: 40 },
   title: { marginBottom: 10 },
-  image: { width: '100%', height: 240, borderRadius: 16, marginBottom: 16, backgroundColor: '#eef2ef' },
+  image: { width: '100%', height: 240, borderRadius: 16, marginBottom: 16, backgroundColor: '#eaf6ee' },
   row: { marginTop: 10 },
   rowLabel: { opacity: 0.7, fontSize: 12 },
   rowValue: { marginTop: 2 },
-  saveBtn: { marginTop: 16, backgroundColor: '#2e7d32', paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
-  saveText: { color: 'white' },
+  saveBtn: { marginTop: 16, backgroundColor: '#2e7d32', paddingVertical: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#1b5e20', shadowColor: '#1b5e20', shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  saveText: { color: 'white', fontWeight: '700' },
 });

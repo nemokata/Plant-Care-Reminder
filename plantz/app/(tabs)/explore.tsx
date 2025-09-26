@@ -164,23 +164,23 @@ const styles = StyleSheet.create({
   searchRow: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 8, zIndex: 5 },
   input: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    backgroundColor: '#f5fbf6',
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)'
+    borderColor: '#d8efe0'
   },
   suggestionsBox: {
     position: 'absolute',
     top: 118, // heading + margins + input height approx
     left: 16,
     right: 16,
-    backgroundColor: 'rgba(255,255,255,0.98)',
+    backgroundColor: '#f7fbf8',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
+    borderColor: '#d8efe0',
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0,0,0,0.06)'
+    borderBottomColor: '#e3f3e8'
   },
   error: { color: '#b00020', marginHorizontal: 18, marginTop: 8 },
   empty: { opacity: 0.6, marginHorizontal: 18, marginTop: 12 },

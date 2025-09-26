@@ -14,7 +14,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={DefaultTheme}>
       <PlantsProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -22,7 +22,7 @@ export default function RootLayout() {
           <Stack.Screen name="plant-modal" options={{ presentation: 'modal', title: 'Plant' }} />
         </Stack>
       </PlantsProvider>
-      <StatusBar style="auto" />
+  <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

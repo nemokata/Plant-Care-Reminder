@@ -1,112 +1,92 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { ThemedText } from '@/components/themed-text';
+import PlantCard from '@/components/plant-card';
+import { searchPlants, inferWateringIntervalDays, PlantSearchResult } from '@/services/plant-api';
+import { useDebounce } from '@/hooks/use-debounce';
+import { Link } from 'expo-router';
 
-export default function TabTwoScreen() {
+export default function PlantSearchScreen() {
+  const [query, setQuery] = useState('Fern');
+  const debounced = useDebounce(query, 500);
+  const [results, setResults] = useState<PlantSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!debounced.trim()) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    searchPlants(debounced)
+      .then(r => { if (!cancelled) setResults(r); })
+      .catch(e => { if (!cancelled) setError(e.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [debounced]);
+
+  const renderItem = ({ item }: { item: PlantSearchResult }) => {
+    const wateringInterval = inferWateringIntervalDays(item.watering);
+    const status = wateringInterval ? `~ every ${wateringInterval} days` : item.watering || '—';
+    const name = item.common_name || item.scientific_name || 'Unknown';
+    const slug = String(name).toLowerCase().replace(/\s+/g, '-');
+    return (
+      <Link
+        href={{ pathname: '/plant/[slug]', params: { slug, data: JSON.stringify(item) } }}
+        asChild>
+        <PlantCard name={name} species={item.scientific_name} status={status} />
+      </Link>
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <ThemedView style={styles.container}>
+      <ThemedText type="title" style={styles.heading}>Search Plants</ThemedText>
+      <View style={styles.searchRow}>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search by name..."
+          placeholderTextColor="#888"
+          style={styles.input}
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </View>
+      {error && <ThemedText style={styles.error}>⚠️ {error}</ThemedText>}
+      {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
+      {!loading && results.length === 0 && !error && debounced.trim().length > 0 && (
+        <ThemedText style={styles.empty}>No plants found.</ThemedText>
+      )}
+      <FlatList
+        data={results}
+        keyExtractor={(_, i) => String(i)}
+        renderItem={renderItem}
+        contentContainerStyle={{ paddingBottom: 40, paddingTop: 8 }}
+      />
+      <ThemedText style={styles.hint}>Data via house-plants RapidAPI • Do not hard‑code your key</ThemedText>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: { flex: 1, paddingTop: 60 },
+  heading: { marginHorizontal: 18, marginBottom: 12 },
+  searchRow: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 4 },
+  input: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    fontSize: 16,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
+  error: { color: '#b00020', marginHorizontal: 18, marginTop: 8 },
+  empty: { opacity: 0.6, marginHorizontal: 18, marginTop: 12 },
+  hint: { textAlign: 'center', opacity: 0.4, fontSize: 11, marginTop: 8 },
 });

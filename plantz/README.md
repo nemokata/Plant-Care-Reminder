@@ -48,3 +48,47 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Plant Search Feature
+
+The Explore tab has been converted into a plant search screen powered by the **house-plants** RapidAPI.
+
+### Setup API Key
+
+1. Create an account (or log in) at RapidAPI and subscribe to the `house-plants2` API.
+2. Copy your API key.
+3. Expose it to the Expo app using a public env var (safe only for non-sensitive / rate-limited keys—you may later proxy this).
+
+Create (or edit) a `.env` file in the project root:
+
+```bash
+echo EXPO_PUBLIC_RAPIDAPI_KEY=YOUR_KEY_HERE > .env
+```
+
+Expo automatically loads `EXPO_PUBLIC_*` variables at build time. Restart the dev server after adding it.
+
+### How it works
+
+- Service file: `services/plant-api.ts` exports `searchPlants(query)`.
+- It reads `process.env.EXPO_PUBLIC_RAPIDAPI_KEY` and sends headers:
+   - `x-rapidapi-host: house-plants2.p.rapidapi.com`
+   - `x-rapidapi-key: <your key>`
+- Basic mapping of watering guidance → approximate interval days (see `inferWateringIntervalDays`).
+
+### Using the screen
+
+1. Start the app: `npx expo start`.
+2. Open the Explore tab.
+3. Type a plant name (e.g., "Fern", "Aloe", "Monstera"). Results populate after a short debounce.
+4. Each result shows:
+    - Common/scientific name
+    - Watering guidance (simplified to interval if possible)
+
+### Future Improvements
+
+- Persist selected plants into a local store.
+- Dedicated detail screen with sunlight, toxicity, growth rate, etc.
+- Add image thumbnails (`default_image.small_url`).
+- Add offline cache (AsyncStorage or MMKV).
+- Introduce a backend proxy to hide the API key for production.
+

@@ -28,7 +28,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <LinearGradient colors={['#9be7ff', '#d6f7d8']} style={styles.hero}>
+      <LinearGradient colors={['#a5d6a7', '#e8f5e9']} style={styles.hero}>
         <ThemedText type="title" style={styles.greeting}>🌿 Hey Plant Friend!</ThemedText>
         <ThemedText type="default" style={styles.subtitle}>Let’s keep your green buddies happy today.</ThemedText>
         <ThemedView style={styles.actionsRow}>
@@ -82,15 +82,17 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: 6, opacity: 0.85 },
   actionsRow: { flexDirection: 'row', gap: 12, marginTop: 22 },
   quickAction: {
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: '#eaf7ed',
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 14,
     alignItems: 'center',
     minWidth: 84,
+    borderWidth: 1,
+    borderColor: '#cbe9d0'
   },
   quickEmoji: { fontSize: 22 },
-  quickLabel: { marginTop: 4, fontSize: 12, fontWeight: '600' },
+  quickLabel: { marginTop: 4, fontSize: 12, fontWeight: '700', color: '#2e7d32' },
   sectionTitle: { marginTop: 18, marginHorizontal: 18, marginBottom: 8 },
   emptyList: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
   emptyText: { opacity: 0.6, textAlign: 'center' },

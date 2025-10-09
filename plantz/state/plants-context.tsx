@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/state/auth-context';
 import { db } from '@/services/firebase';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 export type SavedPlant = {
   id: string;
@@ -48,7 +48,7 @@ export function PlantsProvider({ children }: { children: React.ReactNode }) {
       setPlants((prev) => [{ id: uid(), ...p }, ...prev]);
       return;
     }
-    await addDoc(colRef, { ...p, createdAt: Date.now() });
+    await addDoc(colRef, { ...p, createdAt: serverTimestamp() });
   };
   const removePlant = async (id: string) => {
     if (!user) { setPlants((prev) => prev.filter((x) => x.id !== id)); return; }

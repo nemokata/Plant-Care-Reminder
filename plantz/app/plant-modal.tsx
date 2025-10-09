@@ -56,14 +56,19 @@ export default function PlantModal() {
       return;
     }
     const name = title;
-    await addPlant({
-      name,
-      species: core.scientific_name || core['Latin name'],
-      imageUri,
-      wateringIntervalDays: wateringInterval,
-      source: 'api',
-    });
-    Alert.alert('Saved', `${name} added to your plants`);
+    try {
+      await addPlant({
+        name,
+        species: core.scientific_name || core['Latin name'],
+        imageUri,
+        wateringIntervalDays: wateringInterval,
+        source: 'api',
+      });
+      Alert.alert('Saved', `${name} added to your plants`);
+      router.back();
+    } catch (e: any) {
+      Alert.alert('Could not save', e?.message || 'Please check your internet connection and Firestore rules.');
+    }
   };
 
   return (

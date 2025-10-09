@@ -34,6 +34,11 @@ export default function HomeScreen() {
       <LinearGradient colors={['#a5d6a7', '#e8f5e9']} style={styles.hero}>
         <ThemedText type="title" style={styles.greeting}>🌿 Hey Plant Friend!</ThemedText>
         <ThemedText type="default" style={styles.subtitle}>Let’s keep your green buddies happy today.</ThemedText>
+        {user && (
+          <ThemedText style={{ marginTop: 6, opacity: 0.7, fontSize: 12 }}>
+            Signed in as {user.email} ({user.uid.slice(0,6)}…) · {plants.length} plants
+          </ThemedText>
+        )}
         <ThemedView style={styles.actionsRow}>
           <QuickAction label="Add Plant" emoji="➕" onPress={() => { /* navigation later */ }} />
           <QuickAction label="Watered" emoji="💧" onPress={() => { /* bulk mark later */ }} />

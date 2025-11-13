@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Expo: Start (plantz)",
+			"type": "shell",
+			"command": "npm run start",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Expo: Start (plantz subdir)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"plantz",
+				"run",
+				"start"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

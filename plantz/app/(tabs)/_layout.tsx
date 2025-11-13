@@ -5,15 +5,27 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemePreference } from '@/state/theme-context';
+import { Pressable } from 'react-native';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { scheme, toggle } = useThemePreference();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        tabBarActiveTintColor: Colors[scheme].tint,
+        headerShown: true,
+        headerRight: () => (
+          <Pressable
+            onPress={toggle}
+            accessibilityRole="button"
+            accessibilityLabel={scheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{ paddingHorizontal: 12 }}
+          >
+            <IconSymbol size={22} name={scheme === 'dark' ? 'sun.max.fill' : 'moon.fill'} color={Colors[scheme].tint} />
+          </Pressable>
+        ),
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen

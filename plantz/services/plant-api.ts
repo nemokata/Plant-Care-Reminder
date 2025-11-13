@@ -1,6 +1,7 @@
 // Plant API service: search plants from RapidAPI house-plants2
 // The API key must be provided via an env var: EXPO_PUBLIC_RAPIDAPI_KEY
 // Never hard-code secrets in source control.
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://house-plants2.p.rapidapi.com';
 
@@ -33,11 +34,14 @@ export class PlantApiError extends Error {
 }
 
 function getHeaders(): HeadersInit {
-  // NOTE: Key inlined at user request for testing. Remove before committing publicly.
-  const key = 'd7ce459cfemshf5f63fb82b614b2p1dcb16jsn675ce7ce534d';
+  const key = process.env.EXPO_PUBLIC_RAPIDAPI_KEY;
+  if (!key) {
+    // Provide a descriptive error to help local devs configure env
+    console.warn('[Plant API] Missing EXPO_PUBLIC_RAPIDAPI_KEY. Set it in your shell or .env before starting Expo.');
+  }
   return {
     'x-rapidapi-host': 'house-plants2.p.rapidapi.com',
-    'x-rapidapi-key': key,
+    'x-rapidapi-key': String(key ?? ''),
   };
 }
 
@@ -82,4 +86,21 @@ export async function fetchFallbackImageFromWikipedia(query: string): Promise<st
   } catch {
     return undefined;
   }
+}
+
+const WIKI_CACHE_PREFIX = 'cache:wiki-thumb:';
+
+// Cached version to avoid re-fetching the same fallback thumbnails repeatedly
+export async function fetchFallbackImageFromWikipediaCached(query: string): Promise<string | undefined> {
+  if (!query) return undefined;
+  const key = WIKI_CACHE_PREFIX + query.trim().toLowerCase();
+  try {
+    const cached = await AsyncStorage.getItem(key);
+    if (cached) return cached;
+  } catch {}
+  const fresh = await fetchFallbackImageFromWikipedia(query);
+  if (fresh) {
+    try { await AsyncStorage.setItem(key, fresh); } catch {}
+  }
+  return fresh;
 }

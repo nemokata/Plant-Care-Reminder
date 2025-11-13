@@ -31,9 +31,17 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      {/* Background gradient to softly blend white -> green behind the hero */}
+      <LinearGradient
+        colors={[ '#f6fbf7', '#eef8f0', '#e8f5e9' ]}
+        locations={[0, 0.5, 1]}
+        style={styles.bgGradient}
+        pointerEvents="none"
+      />
       <LinearGradient colors={['#a5d6a7', '#e8f5e9']} style={styles.hero}>
         <ThemedText type="title" style={styles.greeting}>🌿 Hey Plant Friend!</ThemedText>
         <ThemedText type="default" style={styles.subtitle}>Let’s keep your green buddies happy today.</ThemedText>
+<<<<<<< Updated upstream
         {user && (
           <ThemedText style={{ marginTop: 6, opacity: 0.7, fontSize: 12 }}>
             Signed in as {user.email} ({user.uid.slice(0,6)}…) · {plants.length} plants
@@ -49,6 +57,15 @@ export default function HomeScreen() {
               router.push('/auth/sign-in');
             }
           }} />
+=======
+        {/* Transparent containers so the hero gradient stays visible behind buttons */}
+        <ThemedView style={styles.actionsRow} lightColor="transparent" darkColor="transparent">
+          <ThemedView style={styles.actionsInner} lightColor="transparent" darkColor="transparent">
+            <QuickAction label="Add Plant" emoji="➕" onPress={() => { /* navigation later */ }} />
+            <QuickAction label="Watered" emoji="💧" onPress={() => { /* bulk mark later */ }} />
+            <QuickAction label="Reminders" emoji="⏰" onPress={() => { /* open reminders */ }} />
+          </ThemedView>
+>>>>>>> Stashed changes
         </ThemedView>
       </LinearGradient>
 
@@ -85,25 +102,52 @@ function QuickAction({ label, emoji, onPress }: { label: string; emoji: string; 
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  bgGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 260, // covers hero and rounded corners area
+  },
   hero: {
     paddingTop: 70,
     paddingHorizontal: 22,
     paddingBottom: 30,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
+    overflow: 'hidden',
   },
   greeting: { fontSize: 28, fontWeight: '700' },
   subtitle: { marginTop: 6, opacity: 0.85 },
-  actionsRow: { flexDirection: 'row', gap: 12, marginTop: 22 },
+  actionsRow: {
+    marginTop: 22,
+    alignSelf: 'center',
+    width: '100%'
+  },
+  actionsInner: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    gap: 12,
+  },
   quickAction: {
     backgroundColor: '#eaf7ed',
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 14,
     alignItems: 'center',
-    minWidth: 84,
+    minWidth: 96,
+    flexShrink: 0,
     borderWidth: 1,
-    borderColor: '#cbe9d0'
+    borderColor: '#cbe9d0',
+    // subtle shadow to lift buttons from the gradient
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   quickEmoji: { fontSize: 22 },
   quickLabel: { marginTop: 4, fontSize: 12, fontWeight: '700', color: '#2e7d32' },

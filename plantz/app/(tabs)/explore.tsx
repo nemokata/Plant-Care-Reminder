@@ -91,7 +91,7 @@ export default function PlantSearchScreen() {
       core?.Img;
     return (
       <Link href={{ pathname: '/plant-modal', params: { data: JSON.stringify(item) } }} asChild>
-        <PlantCard name={name} species={core.scientific_name || core["Latin name"]} status={status} imageUri={imageUri} />
+        <PlantCard name={name} species={core.scientific_name || core["Latin name"]} status={status} imageUri={imageUri} wateringIntervalDays={wateringInterval} />
       </Link>
     );
   };

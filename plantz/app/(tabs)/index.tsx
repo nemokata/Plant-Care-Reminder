@@ -39,17 +39,6 @@ export default function HomeScreen() {
             Signed in as {user.email} ({user.uid.slice(0,6)}…) · {plants.length} plants
           </ThemedText>
         )}
-        <ThemedView style={styles.actionsRow}>
-          <QuickAction label="Add Plant" emoji="➕" onPress={() => { /* navigation later */ }} />
-          <QuickAction label="Watered" emoji="💧" onPress={() => { /* bulk mark later */ }} />
-          <QuickAction label={user ? 'Sign out' : 'Sign in'} emoji={user ? '👋' : '🔐'} onPress={() => {
-            if (user) {
-              signOutUser();
-            } else {
-              router.push('/auth/sign-in');
-            }
-          }} />
-        </ThemedView>
       </LinearGradient>
 
       <ThemedText type="subtitle" style={styles.sectionTitle}>Your Plants</ThemedText>
@@ -67,6 +56,8 @@ export default function HomeScreen() {
             status={nextWaterText(item)}
             onPress={() => {}}
             imageUri={item.imageUri}
+            wateringIntervalDays={item.wateringIntervalDays}
+            savedId={item.id}
           />
         )}
       />
@@ -74,14 +65,6 @@ export default function HomeScreen() {
   );
 }
 
-function QuickAction({ label, emoji, onPress }: { label: string; emoji: string; onPress: () => void }) {
-  return (
-    <Pressable style={({ pressed }) => [styles.quickAction, pressed && { opacity: 0.7 }]} onPress={onPress}>
-      <ThemedText style={styles.quickEmoji}>{emoji}</ThemedText>
-      <ThemedText style={styles.quickLabel}>{label}</ThemedText>
-    </Pressable>
-  );
-}
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

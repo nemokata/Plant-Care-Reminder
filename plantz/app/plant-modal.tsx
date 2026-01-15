@@ -6,8 +6,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { usePlants } from '@/state/plants-context';
 import { Pressable } from 'react-native';
-import { fetchFallbackImageFromWikipedia, inferWateringIntervalDays } from '@/services/plant-api';
+import { fetchFallbackImageFromWikipedia, inferWateringIntervalDays, getPlantById } from '@/services/plant-api';
 import { useAuth } from '@/state/auth-context';
+import * as NotificationsService from '@/services/notifications';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
 
@@ -16,6 +17,8 @@ export default function PlantModal() {
   const [plant, setPlant] = useState<any | null>(null);
   const [imageUri, setImageUri] = useState<string | undefined>(undefined);
   const [loadingImage, setLoadingImage] = useState(false);
+  const [detailed, setDetailed] = useState<any | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -39,10 +42,36 @@ export default function PlantModal() {
     return () => { cancelled = true; };
   }, [plant]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function loadDetails() {
+      if (!plant) return;
+      const core: any = plant?.item ?? plant;
+      const id = core.id || core.species_id || core.slug || core.speciesId || core._id;
+      if (!id) return;
+      setLoadingDetails(true);
+      try {
+        const det = await getPlantById(String(id));
+        if (cancelled) return;
+        if (det) {
+          setDetailed(det);
+          if (det.default_image?.original_url) setImageUri(det.default_image.original_url);
+        }
+      } catch (e) {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingDetails(false);
+      }
+    }
+    loadDetails();
+    return () => { cancelled = true; };
+  }, [plant]);
+
   const core: any = plant?.item ?? plant;
   const title = core?.common_name || core?.scientific_name || (Array.isArray(core?.['Common name']) ? core?.['Common name'][0] : core?.['Common name']) || core?.['Latin name'] || 'Plant';
   const wateringText: string | undefined = core?.watering || core?.['Watering'];
-  const wateringInterval = inferWateringIntervalDays(wateringText);
+  const wateringTextEffective: string | undefined = (detailed && (detailed.watering || detailed.raw?.watering)) || wateringText || core?.watering_requirements || core?.['Watering'];
+  const wateringInterval = inferWateringIntervalDays(wateringTextEffective);
   const { addPlant } = usePlants();
   const { user } = useAuth();
 
@@ -64,6 +93,11 @@ export default function PlantModal() {
         wateringIntervalDays: wateringInterval,
         source: 'api',
       });
+      // Schedule a quick local reminder for the next watering if interval known
+      if (wateringInterval && title) {
+        const next = new Date(Date.now() + wateringInterval * 86400000);
+        NotificationsService.schedulePlantReminder(title, next);
+      }
       Alert.alert('Saved', `${name} added to your plants`);
       router.back();
     } catch (e: any) {
@@ -80,17 +114,30 @@ export default function PlantModal() {
           <Image source={{ uri: imageUri }} style={styles.image} contentFit="cover" />
         )}
         <InfoRow label="Scientific name" value={core?.scientific_name || core?.['Latin name']} />
-        <InfoRow label="Watering" value={wateringText} />
+        <InfoRow label="Watering" value={wateringTextEffective || wateringText} />
         <InfoRow label="Suggested interval" value={wateringInterval ? `~ every ${wateringInterval} days` : undefined} />
-        <InfoRow label="Humidity" value={core?.humidity} />
-        <InfoRow label="Sunlight" value={Array.isArray(core?.sunlight) ? core?.sunlight?.join(', ') : (core?.sunlight as any) || core?.['Light ideal'] || core?.['Light tolered']} />
-        <InfoRow label="Care level" value={core?.care_level} />
-        <InfoRow label="Toxicity" value={core?.toxicity} />
-        <InfoRow label="Growth rate" value={core?.growth_rate || core?.Growth} />
-        <InfoRow label="Cycle" value={core?.cycle} />
-        <InfoRow label="Family" value={core?.Family} />
-        <InfoRow label="Origin" value={Array.isArray(core?.Origin) ? core?.Origin?.join(', ') : core?.Origin} />
-        <InfoRow label="Use" value={Array.isArray(core?.Use) ? core?.Use?.join(', ') : core?.Use} />
+        <InfoRow label="Humidity" value={detailed?.humidity || core?.humidity} />
+        <InfoRow label="Sunlight" value={
+          Array.isArray(detailed?.sunlight) ? detailed?.sunlight.join(', ') :
+          Array.isArray(core?.sunlight) ? core?.sunlight.join(', ') :
+          (detailed?.sunlight as any) || (core?.sunlight as any) || core?.['Light ideal'] || core?.['Light tolered']
+        } />
+        <InfoRow label="Care level" value={detailed?.care_level || core?.care_level} />
+        <InfoRow label="Toxicity" value={detailed?.toxicity || core?.toxicity} />
+        <InfoRow label="Growth rate" value={detailed?.growth_rate || core?.growth_rate || core?.Growth} />
+        <InfoRow label="Cycle" value={detailed?.cycle || core?.cycle} />
+        <InfoRow label="Family" value={detailed?.family || core?.Family} />
+        <InfoRow label="Origin" value={
+          Array.isArray(detailed?.origin) ? detailed?.origin.join(', ') :
+          Array.isArray(core?.Origin) ? core?.Origin.join(', ') :
+          detailed?.origin || core?.Origin
+        } />
+        <InfoRow label="Uses" value={
+          Array.isArray(detailed?.uses) ? detailed?.uses.join(', ') :
+          detailed?.uses || (Array.isArray(core?.Use) ? core?.Use.join(', ') : core?.Use)
+        } />
+        <InfoRow label="Soil" value={detailed?.soil || core?.soil || core?.Soil} />
+        <InfoRow label="Propagation" value={Array.isArray(detailed?.propagation) ? detailed?.propagation.join(', ') : detailed?.propagation || core?.Propagation} />
         <InfoRow label="Bearing" value={core?.Bearing} />
         <InfoRow label="Temperature range" value={(core?.['Temperature min'] && core?.['Temperature max']) ? `${core['Temperature min'].C}–${core['Temperature max'].C} °C` : undefined} />
         <InfoRow label="Zone" value={Array.isArray(core?.Zone) ? core?.Zone?.join(', ') : core?.Zone} />

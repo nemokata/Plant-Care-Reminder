@@ -58,7 +58,7 @@ export default function CommonPlantsScreen() {
       item.default_image?.original_url;
     return (
       <Link href={{ pathname: '/plant-modal', params: { data: JSON.stringify(item) } }} asChild>
-        <PlantCard name={name} species={item.scientific_name} status={status} imageUri={imageUri} />
+        <PlantCard name={name} species={item.scientific_name} status={status} imageUri={imageUri} wateringIntervalDays={wateringInterval} />
       </Link>
     );
   };

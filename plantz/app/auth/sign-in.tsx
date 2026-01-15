@@ -6,8 +6,9 @@ import { useAuth } from '@/state/auth-context';
 import { Link, router } from 'expo-router';
 
 export default function SignInScreen() {
-  const { signIn } = useAuth();
+  const { signIn, lastEmail } = useAuth();
   const [email, setEmail] = useState('');
+  React.useEffect(() => { if (lastEmail) setEmail(lastEmail); }, [lastEmail]);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 

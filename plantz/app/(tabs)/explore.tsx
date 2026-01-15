@@ -1,17 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import PlantCard from '@/components/plant-card';
 import { searchPlants, inferWateringIntervalDays, PlantSearchResult } from '@/services/plant-api';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Link } from 'expo-router';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function PlantSearchScreen() {
-  const scheme = useColorScheme() ?? 'light';
   const [query, setQuery] = useState('Fern');
   // Two debounced values: quick for suggestions, slower for full results
   const quickDebounced = useDebounce(query, 150);
@@ -21,7 +17,6 @@ export default function PlantSearchScreen() {
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [inputLayout, setInputLayout] = useState<{ y: number; height: number }>({ y: 0, height: 0 });
   const blurHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Helper: get a good display name from item supporting various API field shapes
@@ -96,13 +91,7 @@ export default function PlantSearchScreen() {
       core?.Img;
     return (
       <Link href={{ pathname: '/plant-modal', params: { data: JSON.stringify(item) } }} asChild>
-        <PlantCard
-          name={name}
-          species={core.scientific_name || core["Latin name"]}
-          status={status}
-          imageUri={imageUri}
-          textColor={scheme === 'dark' ? '#000' : undefined}
-        />
+        <PlantCard name={name} species={core.scientific_name || core["Latin name"]} status={status} imageUri={imageUri} />
       </Link>
     );
   };
@@ -125,26 +114,13 @@ export default function PlantSearchScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText
-        type="title"
-        style={styles.heading}
-        lightColor="#2e7d32"
-        darkColor="#FFFFFF"
-      >
-        Search Plants
-      </ThemedText>
-      <View
-        style={styles.searchRow}
-        onLayout={(e) => {
-          const { y, height } = e.nativeEvent.layout;
-          setInputLayout({ y, height });
-        }}
-      >
+      <ThemedText type="title" style={styles.heading}>Search Plants</ThemedText>
+      <View style={styles.searchRow}>
         <TextInput
           value={query}
           onChangeText={setQuery}
           placeholder="Search by name..."
-          placeholderTextColor="#444"
+          placeholderTextColor="#888"
           style={styles.input}
           autoCapitalize="none"
           autoCorrect={false}
@@ -158,23 +134,18 @@ export default function PlantSearchScreen() {
         />
       </View>
       {showSuggestions && suggestions.length > 0 && query.trim().length > 0 && (
-        <View style={[styles.suggestionsBox, { top: inputLayout.y + inputLayout.height + 6 }]}>
+        <View style={styles.suggestionsBox}>
           {suggestions.map((s, i) => (
             <Pressable key={`${s}-${i}`} onPress={() => onSuggestionPress(s)} style={({ pressed }) => [styles.suggestionRow, pressed && { opacity: 0.6 }] }>
-              <ThemedText lightColor="#000" darkColor="#000">{s}</ThemedText>
+              <ThemedText>{s}</ThemedText>
             </Pressable>
           ))}
         </View>
       )}
-  {error && <EmptyState title="Fehler" subtitle={error} color="#000" />}
-      {loading && (
-        <View style={{ gap: 12, paddingHorizontal: 16, marginTop: 10 }}>
-          <Skeleton height={74} />
-          <Skeleton height={74} />
-        </View>
-      )}
+      {error && <ThemedText style={styles.error}>⚠️ {error}</ThemedText>}
+      {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
       {!loading && results.length === 0 && !error && slowDebounced.trim().length > 0 && (
-        <EmptyState title="Keine Pflanzen gefunden" subtitle="Bitte prüfe deine Suche oder versuche einen anderen Namen." color="#000" />
+        <ThemedText style={styles.empty}>No plants found.</ThemedText>
       )}
       <FlatList
         data={results}
@@ -182,7 +153,7 @@ export default function PlantSearchScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 40, paddingTop: 8 }}
       />
-  <ThemedText style={styles.hint} lightColor="#000" darkColor="#000">Data via house-plants RapidAPI</ThemedText>
+  <ThemedText style={styles.hint}>Data via house-plants RapidAPI</ThemedText>
     </ThemedView>
   );
 }
@@ -203,6 +174,7 @@ const styles = StyleSheet.create({
   },
   suggestionsBox: {
     position: 'absolute',
+    top: 118, // heading + margins + input height approx
     left: 16,
     right: 16,
     backgroundColor: '#f7fbf8',
